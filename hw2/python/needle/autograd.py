@@ -453,6 +453,7 @@ def find_topo_sort(node_list: List[Value]) -> List[Value]:
     for node in node_list:
         if node not in visited:
             topo_sort_dfs(node, visited, topo_order)
+    return topo_order
     ### END YOUR SOLUTION
 
 

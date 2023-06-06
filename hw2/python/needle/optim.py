@@ -25,7 +25,16 @@ class SGD(Optimizer):
 
     def step(self):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        for w in self.params:
+            if w not in self.u:
+                # NOTE: intialized with zeros
+                self.u[w] = 0
+            # NOTE: param.grad maybe None
+            if w.grad is None:
+                continue 
+            grad = ndl.Tensor(w.grad.numpy(), dtype='float32').data + self.weight_decay * w.data
+            self.u[w] = self.momentum * self.u[w] + (1 - self.momentum) * grad
+            w.data = w.data - self.lr * self.u[w]
         ### END YOUR SOLUTION
 
 
@@ -52,5 +61,21 @@ class Adam(Optimizer):
 
     def step(self):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        self.t += 1
+        for param in self.params:
+            if param not in self.m:
+                self.m[param] = ndl.init.zeros(*param.shape)
+                self.v[param] = ndl.init.zeros(*param.shape)
+            if param.grad is None:
+                continue
+            grad_data = ndl.Tensor(param.grad.numpy(), dtype='float32').data \
+                 + param.data * self.weight_decay
+            self.m[param] = self.beta1 * self.m[param] \
+                + (1 - self.beta1) * grad_data
+            self.v[param] = self.beta2 * self.v[param] \
+                + (1 - self.beta2) * grad_data**2
+            # NOTE: bias correction
+            u_hat = (self.m[param]) / (1 - self.beta1 ** self.t)
+            v_hat = (self.v[param]) / (1 - self.beta2 ** self.t)
+            param.data = param.data - self.lr * u_hat / (v_hat ** 0.5 + self.eps) 
         ### END YOUR SOLUTION
